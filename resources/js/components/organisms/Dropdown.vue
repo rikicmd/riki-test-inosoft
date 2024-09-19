@@ -2,6 +2,7 @@
     <div ref="dropdown" class="relative inline-block text-left w-full">
         <DropdownButton
             @click="toggleMenu"
+            @remove="removeSelected"
             :label="label"
             :isOpen="isOpen"
             :selectedData="selected"
@@ -81,7 +82,9 @@ export default {
     computed: {
         filteredItems() {
             return this.items.filter((item) =>
-                item.text.toLowerCase().includes(this.searchTerm.toLowerCase())
+                item?.text
+                    ?.toLowerCase()
+                    .includes(this.searchTerm.toLowerCase())
             );
         },
     },
@@ -92,6 +95,9 @@ export default {
         selectItem(item) {
             this.$emit("item-selected", item);
             this.isOpen = false;
+        },
+        removeSelected() {
+            this.$emit("remove-selected", this.name);
         },
         handleClickOutside(event) {
             const dropdown = this.$refs.dropdown;

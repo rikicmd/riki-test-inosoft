@@ -53,11 +53,11 @@
                             ></div>
                             <div class="px-4 pr-20 hidden md:block">
                                 <Dropdown
-                                    :items="dropdownItems"
+                                    :items="countryOptions"
                                     @item-selected="handleItemSelected"
-                                    label="Category"
-                                    name="category"
-                                    :selected="selected.category"
+                                    label="Country"
+                                    name="country_name"
+                                    :selected="selected.country_name"
                                     type="category"
                                     :searchable="false"
                                 />
@@ -65,11 +65,11 @@
 
                             <div class="px-4 pr-20 md:hidden">
                                 <Dropdown
-                                    :items="dropdownItems"
+                                    :items="countryOptions"
                                     @item-selected="handleItemSelected"
                                     label="Category"
-                                    name="category"
-                                    :selected="selected.category"
+                                    name="country_name"
+                                    :selected="selected.country_name"
                                     :searchable="false"
                                 />
                             </div>
@@ -80,32 +80,36 @@
                         class="w-full flex flex-col lg:flex-row items-center gap-4 justify-between bg-white p-4 shadow rounded-bl-lg rounded-r-lg"
                     >
                         <Dropdown
-                            :items="dropdownItems"
+                            :items="productTypeOptions"
                             @item-selected="handleItemSelected"
+                            @remove-selected="handleRemoveSelected"
                             label="Product Type"
-                            name="productType"
-                            :selected="selected.productType"
+                            name="product_type"
+                            :selected="selected.product_type"
                         >
                         </Dropdown>
                         <Dropdown
-                            :items="dropdownItems"
+                            :items="sizeOptions"
                             @item-selected="handleItemSelected"
+                            @remove-selected="handleRemoveSelected"
                             label="Size"
                             name="size"
                             :selected="selected.size"
                         >
                         </Dropdown>
                         <Dropdown
-                            :items="dropdownItems"
+                            :items="gradeOptions"
                             @item-selected="handleItemSelected"
+                            @remove-selected="handleRemoveSelected"
                             label="Grade"
                             name="grade"
                             :selected="selected.grade"
                         >
                         </Dropdown>
                         <Dropdown
-                            :items="dropdownItems"
+                            :items="connectionOptions"
                             @item-selected="handleItemSelected"
+                            @remove-selected="handleRemoveSelected"
                             label="Connection"
                             name="connection"
                             :selected="selected.connection"
@@ -146,36 +150,56 @@ export default {
         HowtoBuy,
     },
     mounted() {
-        console.log("Component mounted.");
+        this.$store.dispatch("products/fetchProducts").then(() => {
+            if (this.countryOptions.length > 0) {
+                this.selected.country_name = this.countryOptions[0];
+                this.$store.dispatch("products/updateOptions", {
+                    selected: this.selected,
+                    keyUpdate: "country",
+                });
+            }
+        });
+    },
+    computed: {
+        countryOptions() {
+            return this.$store.state.products.options.country;
+        },
+        productTypeOptions() {
+            return this.$store.state.products.options.product_type;
+        },
+        gradeOptions() {
+            return this.$store.state.products.options.grade;
+        },
+        connectionOptions() {
+            return this.$store.state.products.options.connection;
+        },
+        sizeOptions() {
+            return this.$store.state.products.options.size;
+        },
     },
     data() {
         return {
-            dropdownItems: [
-                { text: "Item 1", value: 1, count: 10 },
-                { text: "Item 2", value: 2, count: 20 },
-                { text: "Item 3", value: 3, count: 30 },
-                { text: "Item 3", value: 3, count: 30 },
-                { text: "Item 3", value: 3, count: 30 },
-                { text: "Item 3", value: 3, count: 30 },
-                { text: "Item 3", value: 3, count: 30 },
-                { text: "Item 3", value: 3, count: 30 },
-                { text: "Item 3", value: 3, count: 30 },
-                { text: "Item 3", value: 3, count: 30 },
-                { text: "Item 3", value: 3, count: 30 },
-                { text: "Item 3", value: 3, count: 30 },
-            ],
-            selected: {
-                productType: null,
-                size: null,
-                grade: null,
-                connection: null,
-                category: null,
-            },
+            selected: {},
         };
     },
     methods: {
         handleItemSelected(item) {
+            if (item.name === "country_name") {
+                this.selected = {};
+            }
             this.selected[item.name] = item?.item;
+            this.$store.dispatch("products/updateOptions", {
+                selected: this.selected,
+                keyUpdate: item.name,
+            });
+        },
+        handleRemoveSelected(name) {
+            delete this.selected[name];
+
+            this.$store.dispatch("products/updateOptions", {
+                selected: this.selected,
+                keyUpdate: name,
+            });
         },
     },
 };
