@@ -19,15 +19,9 @@
 <script>
 export default {
     name: "DropdownSearch",
-    props: {
-        modelValue: {
-            type: String,
-            default: "",
-        },
-    },
     data() {
         return {
-            searchQuery: this.modelValue,
+            searchQuery: "",
         };
     },
     watch: {

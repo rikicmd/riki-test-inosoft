@@ -19,7 +19,10 @@
             <div class="text-sm text-primary-blue2 mb-2">
                 Select a <span class="font-bold">{{ label }}</span> below
             </div>
-            <DropdownSearch v-if="searchable" v-model="searchTerm" />
+            <DropdownSearch
+                v-if="searchable"
+                @update:modelValue="updateSearchQuery"
+            />
             <div
                 class="flex mt-2 flex-col gap-2 max-h-[200px] overflow-y-scroll overflow-x-hidden"
             >
@@ -76,15 +79,13 @@ export default {
     data() {
         return {
             isOpen: false,
-            searchTerm: "",
+            searchQuery: "",
         };
     },
     computed: {
         filteredItems() {
             return this.items.filter((item) =>
-                item?.text
-                    ?.toLowerCase()
-                    .includes(this.searchTerm.toLowerCase())
+                item.text.toLowerCase().includes(this.searchQuery.toLowerCase())
             );
         },
     },
@@ -104,6 +105,9 @@ export default {
             if (dropdown && !dropdown.contains(event.target)) {
                 this.isOpen = false;
             }
+        },
+        updateSearchQuery(newVal) {
+            this.searchQuery = newVal;
         },
     },
     mounted() {

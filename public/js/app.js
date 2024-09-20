@@ -2212,15 +2212,9 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ });
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = ({
   name: "DropdownSearch",
-  props: {
-    modelValue: {
-      type: String,
-      "default": ""
-    }
-  },
   data: function data() {
     return {
-      searchQuery: this.modelValue
+      searchQuery: ""
     };
   },
   watch: {
@@ -2305,15 +2299,14 @@ __webpack_require__.r(__webpack_exports__);
   data: function data() {
     return {
       isOpen: false,
-      searchTerm: ""
+      searchQuery: ""
     };
   },
   computed: {
     filteredItems: function filteredItems() {
       var _this = this;
       return this.items.filter(function (item) {
-        var _item$text;
-        return item === null || item === void 0 || (_item$text = item.text) === null || _item$text === void 0 ? void 0 : _item$text.toLowerCase().includes(_this.searchTerm.toLowerCase());
+        return item.text.toLowerCase().includes(_this.searchQuery.toLowerCase());
       });
     }
   },
@@ -2333,6 +2326,9 @@ __webpack_require__.r(__webpack_exports__);
       if (dropdown && !dropdown.contains(event.target)) {
         this.isOpen = false;
       }
+    },
+    updateSearchQuery: function updateSearchQuery(newVal) {
+      this.searchQuery = newVal;
     }
   },
   mounted: function mounted() {
@@ -2950,12 +2946,8 @@ var render = function render() {
   }, [_vm._v("\n            Select a "), _c("span", {
     staticClass: "font-bold"
   }, [_vm._v(_vm._s(_vm.label))]), _vm._v(" below\n        ")]), _vm._v(" "), _vm.searchable ? _c("DropdownSearch", {
-    model: {
-      value: _vm.searchTerm,
-      callback: function callback($$v) {
-        _vm.searchTerm = $$v;
-      },
-      expression: "searchTerm"
+    on: {
+      "update:modelValue": _vm.updateSearchQuery
     }
   }) : _vm._e(), _vm._v(" "), _c("div", {
     staticClass: "flex mt-2 flex-col gap-2 max-h-[200px] overflow-y-scroll overflow-x-hidden"
