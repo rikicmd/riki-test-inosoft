@@ -8,7 +8,7 @@ function countByKey(product, key, count) {
     } else {
         count.push({
             value: keyValue,
-            count: 0,
+            count: 1,
             text: keyValue
         });
     }
@@ -22,13 +22,17 @@ function resetAllCount(options) {
 
 const state = {
     products: [],
+    productsData: [],
+    meta: null,
     options: {
         country: [],
         product_type: [],
         grade: [],
         connection: [],
         size: []
-    }
+    },
+    loading: false,
+    errors: null
 }
 
 const mutations = {
@@ -38,14 +42,28 @@ const mutations = {
     SET_OPTIONS(state, options) {
         state.options = options
     },
+    SET_PRODUCTS_DATA(state, productsData) {
+        state.productsData = productsData
+    },
+    SET_LOADING(state, isLoading) {
+        state.loading = isLoading;
+    },
+    SET_ERRORS(state, errors) {
+        state.errors = errors;
+    },
+    SET_META(state, meta) {
+        state.meta = meta;
+    },
 }
 
 const actions = {
     async fetchProducts({ commit, state }) {
+        commit("SET_ERRORS", null);
+        commit("SET_LOADING", true);
+        commit("SET_META", null);
         try {
-            const response = await axiosInstance.get("/api/products");
+            const response = await axiosInstance.get("/api/products-all");
             const products = response.data;
-
             const options = { ...state.options }
 
             products.forEach(product => {
@@ -58,9 +76,12 @@ const actions = {
 
             commit("SET_PRODUCTS", products);
             commit('SET_OPTIONS', options);
+            commit('SET_PRODUCTS_DATA', products.filter((p) => p.country_name === options.country[0].value))
 
         } catch (error) {
-
+            commit("SET_ERRORS", error?.response?.statusText || 'Internal Server Error');
+        } finally {
+            commit("SET_LOADING", false);
         }
     },
     updateOptions({ commit, state }, {
@@ -91,10 +112,28 @@ const actions = {
         });
 
         commit('SET_OPTIONS', options);
+    },
+    async fetchProductsData({ commit }, { params }) {
+        commit("SET_ERRORS", null);
+        commit("SET_LOADING", true);
+        try {
+            const response = await axiosInstance.get("/api/products", {
+                params
+            });
+
+            const { data: products, ...meta } = response.data;
+
+            commit("SET_META", meta);
+            commit("SET_PRODUCTS_DATA", products);
+
+        } catch (error) {
+            commit("SET_ERRORS", error?.response?.statusText || 'Internal Server Error');
+        } finally {
+            commit("SET_LOADING", false);
+        }
+
     }
 }
-
-
 
 export default {
     namespaced: true,

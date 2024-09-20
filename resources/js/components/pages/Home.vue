@@ -1,5 +1,6 @@
 <template>
     <div>
+        <Loading :isLoading="isLoading" />
         <div class="container mx-auto py-4">
             <div class="flex justify-between items-center">
                 <div class="hidden lg:block">
@@ -116,6 +117,8 @@
                         >
                         </Dropdown>
                         <Button
+                            type="button"
+                            @click="findProducts"
                             class="bg-primary-orange w-full justify-center lg:w-[200px] flex items-center font-bold gap-2 h-[55px] !text-white !border-none"
                         >
                             <div class="w-4 h-4">
@@ -135,19 +138,45 @@
                 </div>
             </div>
         </div>
+
+        <div class="my-20 container mx-auto">
+            <div class="my-2 text-2xl">
+                Total Products is
+                <span class="font-bold">{{
+                    meta?.total || productsData?.length
+                }}</span>
+            </div>
+            <Table :columns="columns" :data="productsData"></Table>
+
+            <div v-if="meta && productsData.length">
+                <Pagination
+                    :currentPage="meta.current_page"
+                    :totalItems="meta.total"
+                    :itemsPerPage="meta.per_page"
+                    @update:currentPage="changePage"
+                />
+            </div>
+        </div>
     </div>
 </template>
 
 <script>
+import products from "../../store/modules/products";
 import Button from "../atoms/Button.vue";
+import Loading from "../atoms/Loading.vue";
 import HowtoBuy from "../molecules/HowtoBuy.vue";
 import Dropdown from "../organisms/Dropdown.vue";
+import Pagination from "../organisms/Pagination.vue";
+import Table from "../organisms/Table.vue";
 
 export default {
     components: {
         Dropdown,
         Button,
         HowtoBuy,
+        Table,
+        Loading,
+        Pagination,
     },
     mounted() {
         this.$store.dispatch("products/fetchProducts").then(() => {
@@ -176,10 +205,31 @@ export default {
         sizeOptions() {
             return this.$store.state.products.options.size;
         },
+        productsData() {
+            return this.$store.state.products.productsData;
+        },
+        isLoading() {
+            return this.$store.state.products.loading;
+        },
+        meta() {
+            return this.$store.state.products.meta;
+        },
     },
     data() {
         return {
             selected: {},
+            columns: [
+                { label: "Country", field: "country_name" },
+                { label: "Code", field: "code" },
+                { label: "Item Code", field: "item_code" },
+                { label: "Product Type", field: "product_type" },
+                { label: "Grade", field: "grade" },
+                { label: "Size", field: "size" },
+                { label: "Connection", field: "connection" },
+                { label: "Qty", field: "qty" },
+                { label: "Unit", field: "qty_unit" },
+            ],
+            currentPage: 1,
         };
     },
     methods: {
@@ -200,6 +250,28 @@ export default {
                 selected: this.selected,
                 keyUpdate: name,
             });
+        },
+        fetchProducts() {
+            this.$store.dispatch("products/fetchProductsData", {
+                params: {
+                    country_name:
+                        this.selected?.country_name?.value || undefined,
+                    product_type:
+                        this.selected?.product_type?.value || undefined,
+                    grade: this.selected?.grade?.value || undefined,
+                    connection: this.selected?.connection?.value || undefined,
+                    size: this.selected?.size?.value || undefined,
+                    page: this.currentPage || 1,
+                },
+            });
+        },
+        findProducts() {
+            this.currentPage = 1;
+            this.fetchProducts();
+        },
+        changePage(newPage) {
+            this.currentPage = newPage;
+            this.fetchProducts();
         },
     },
 };
